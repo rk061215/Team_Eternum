@@ -16,6 +16,47 @@ import {
   Award,
   ChevronDown
 } from "lucide-react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+
+interface FadeInSectionProps {
+  children: ReactNode;
+  delay?: number;
+}
+
+const FadeInSection = ({ children, delay = 0 }: FadeInSectionProps) => {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    if (ref.current) observer.observe(ref.current);
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      style={{ transitionDelay: `${delay}ms` }}
+      className={`transition-all duration-700 ease-out
+        ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}
+      `}
+    >
+      {children}
+    </div>
+  );
+};
+
+
 
 const Index = () => {
   const features = [
@@ -59,9 +100,36 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
+      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/50" />
+
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-hero">
+<section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+  
+  {/* 🎥 Background Video */}
+  <video
+    autoPlay
+    muted
+    loop
+    playsInline
+    className="absolute inset-0 w-full h-full object-cover"
+  >
+    <source src="/src/assets/greenbg.mp4" type=" Video/mp4" />
+  </video>
+  <div className="absolute inset-0 pointer-events-none">
+  <div className="absolute top-1/3 left-1/4 w-3 h-3 bg-eco-lime rounded-full blur-lg animate-ping" />
+  <div className="absolute bottom-1/3 right-1/4 w-2 h-2 bg-eco-lime rounded-full blur-md animate-ping delay-1000" />
+</div>
+
+
+  {/* 🌑 Dark overlay for readability */}
+  <div className="absolute inset-0 bg-black/40" />
+
+  {/* ✨ Dynamic green lighting glow */}
+  <div className="absolute inset-0">
+    <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-eco-lime/20 rounded-full blur-3xl animate-pulse-slow" />
+    <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-eco-lime/10 rounded-full blur-3xl animate-float" />
+  </div>
+
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-20 left-10 w-64 h-64 bg-eco-lime/10 rounded-full blur-3xl animate-float" />
@@ -78,17 +146,26 @@ const Index = () => {
         </div>
         
         <div className="container mx-auto px-6 relative z-10 text-center">
+          {/* 🌟 Light Halo Behind Text */}
+<div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+  <div className="w-[600px] h-[600px] bg-eco-lime/20 rounded-full blur-[140px] animate-pulse-slow" />
+</div>
+
           <div className="max-w-4xl mx-auto space-y-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-primary-foreground/90 text-sm font-medium">
               <Leaf className="w-4 h-4 text-eco-lime" />
               <span>Earn rewards for sustainable actions</span>
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-extrabold text-primary-foreground leading-tight">
-              Make Earth Green,
-              <br />
-              <span className="text-eco-lime">Get Rewarded</span>
-            </h1>
+            <h1 className="text-5xl md:text-7xl font-extrabold leading-tight text-white relative">
+  <span className="block drop-shadow-[0_0_30px_rgba(34,197,94,0.35)]">
+    Make Earth Green,
+  </span>
+  <span className="block text-eco-lime drop-shadow-[0_0_45px_rgba(34,197,94,0.8)] animate-pulse-slow">
+    Get Rewarded
+  </span>
+</h1>
+
             
             <p className="text-xl md:text-2xl text-primary-foreground/80 max-w-2xl mx-auto leading-relaxed">
               Track your eco-friendly activities, plant trees, collect plastic, and earn points for a sustainable future.
@@ -96,7 +173,12 @@ const Index = () => {
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <Link to="/register">
-                <Button variant="lime" size="xl" className="group">
+               <Button
+  variant="lime"
+  size="xl"
+  className="group shadow-[0_0_25px_rgba(34,197,94,0.6)] hover:shadow-[0_0_45px_rgba(34,197,94,0.9)] transition-all"
+>
+
                   Start Your Journey
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
@@ -119,56 +201,68 @@ const Index = () => {
 
       {/* Stats Section */}
       <section className="py-20 bg-background relative -mt-20">
-        <div className="container mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 -mt-10 relative z-20">
-            {stats.map((stat, index) => (
-              <Card key={index} variant="eco" className="text-center">
-                <CardContent className="pt-8 pb-6">
-                  <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <stat.icon className="w-6 h-6 text-primary" />
-                  </div>
-                  <p className="text-3xl md:text-4xl font-bold text-foreground">{stat.value}</p>
-                  <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
-                </CardContent>
-              </Card>
-            ))}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 -mt-10 relative z-20">
+  {stats.map((stat, index) => (
+    <FadeInSection key={index} delay={index * 120}>
+      <Card variant="eco" className="text-center">
+        <CardContent className="pt-8 pb-6">
+          <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-primary/10 flex items-center justify-center">
+            <stat.icon className="w-6 h-6 text-primary" />
           </div>
-        </div>
+          <p className="text-3xl md:text-4xl font-bold text-foreground">{stat.value}</p>
+          <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
+        </CardContent>
+      </Card>
+    </FadeInSection>
+  ))}
+</div>
+
       </section>
 
       {/* Features Section */}
       <section className="py-24 bg-muted/30">
         <div className="container mx-auto px-6">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-4xl font-bold text-foreground mb-4">
-              Four Ways to Earn
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Choose your eco-activities and start earning points that convert to real rewards.
-            </p>
-          </div>
+          <FadeInSection>
+  <div className="text-center max-w-2xl mx-auto mb-16">
+    <h2 className="text-4xl font-bold text-foreground mb-4">
+      Four Ways to Earn
+    </h2>
+    <p className="text-lg text-muted-foreground">
+      Choose your eco-activities and start earning points that convert to real rewards.
+    </p>
+  </div>
+</FadeInSection>
+
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {features.map((feature, index) => (
-              <Card 
-                key={index} 
-                variant="eco" 
-                className="group hover:shadow-eco-lg transition-all duration-300 hover:-translate-y-1"
-              >
-                <CardContent className="pt-8 pb-6">
-                  <div className={`w-14 h-14 rounded-2xl ${feature.color} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform`}>
-                    <feature.icon className="w-7 h-7" />
-                  </div>
-                  <h3 className="text-xl font-bold text-foreground mb-2">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{feature.description}</p>
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-eco-lime/10 text-eco-forest text-sm font-semibold">
-                    <Leaf className="w-4 h-4 text-eco-lime" />
-                    {feature.points}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+  {features.map((feature, index) => (
+    <FadeInSection key={index} delay={index * 150}>
+      <Card
+        variant="eco"
+        className="group hover:shadow-eco-lg transition-all duration-300 hover:-translate-y-1"
+      >
+        <CardContent className="pt-8 pb-6">
+          <div
+            className={`w-14 h-14 rounded-2xl ${feature.color} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform`}
+          >
+            <feature.icon className="w-7 h-7" />
           </div>
+          <h3 className="text-xl font-bold text-foreground mb-2">
+            {feature.title}
+          </h3>
+          <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+            {feature.description}
+          </p>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-eco-lime/10 text-eco-forest text-sm font-semibold">
+            <Leaf className="w-4 h-4 text-eco-lime" />
+            {feature.points}
+          </div>
+        </CardContent>
+      </Card>
+    </FadeInSection>
+  ))}
+</div>
+
         </div>
       </section>
 

@@ -1,65 +1,82 @@
 import { Link } from "react-router-dom";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import StatCard from "@/components/stats/StatCard";
-import { 
-  Leaf, 
-  Footprints, 
-  TreeDeciduous, 
-  Bus, 
-  Recycle, 
-  Gift, 
+import {
+  Leaf,
+  Footprints,
+  TreeDeciduous,
+  Bus,
+  Recycle,
+  Gift,
   TrendingUp,
   Target,
   Award,
   ArrowRight,
-  Flame
+  Flame,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
-const Dashboard = () => {
-  const activities = [
-    { 
-      icon: Footprints, 
-      title: "Walking", 
-      points: 120, 
-      subtitle: "12 km this week",
-      color: "lime" as const,
-      href: "/walk"
-    },
-    { 
-      icon: TreeDeciduous, 
-      title: "Trees", 
-      points: 150, 
-      subtitle: "3 trees planted",
-      color: "primary" as const,
-      href: "/trees"
-    },
-    { 
-      icon: Bus, 
-      title: "Transport", 
-      points: 85, 
-      subtitle: "17 km traveled",
-      color: "sky" as const,
-      href: "/transport"
-    },
-    { 
-      icon: Recycle, 
-      title: "Plastic", 
-      points: 60, 
-      subtitle: "4 bottles collected",
-      color: "orange" as const,
-      href: "/plastic"
-    },
-  ];
+/* -------------------------------------------------- */
+/* Smooth cinematic reveal (Apple-like)                */
+/* -------------------------------------------------- */
 
-  const recentActivities = [
-    { action: "Walked 2.5 km", points: "+25", time: "2 hours ago", icon: Footprints },
-    { action: "Collected 1 bottle", points: "+15", time: "5 hours ago", icon: Recycle },
-    { action: "Bus ride verified", points: "+10", time: "Yesterday", icon: Bus },
-    { action: "Tree photo verified", points: "+50", time: "2 days ago", icon: TreeDeciduous },
+interface RevealProps {
+  children: ReactNode;
+  delay?: number;
+}
+
+const Reveal = ({ children, delay = 0 }: RevealProps) => {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      ([e]) => e.isIntersecting && setVisible(true),
+      { threshold: 0.18 }
+    );
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      style={{ transitionDelay: `${delay}ms` }}
+      className={`transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)]
+        ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}
+      `}
+    >
+      {children}
+    </div>
+  );
+};
+
+/* -------------------------------------------------- */
+/* Dashboard                                           */
+/* -------------------------------------------------- */
+
+const Dashboard = () => {
+  /* 🌫️ Very slow ambient glow drift */
+  const [phase, setPhase] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setPhase((p) => (p + 0.002) % 1);
+    }, 16);
+    return () => clearInterval(id);
+  }, []);
+
+  /* ---------------- DATA (UNCHANGED) ---------------- */
+
+  const activities = [
+    { icon: Footprints, title: "Walking", points: 120, subtitle: "12 km this week", color: "lime" as const, href: "/walk" },
+    { icon: TreeDeciduous, title: "Trees", points: 150, subtitle: "3 trees planted", color: "primary" as const, href: "/trees" },
+    { icon: Bus, title: "Transport", points: 85, subtitle: "17 km traveled", color: "sky" as const, href: "/transport" },
+    { icon: Recycle, title: "Plastic", points: 60, subtitle: "4 bottles collected", color: "orange" as const, href: "/plastic" },
   ];
 
   const achievements = [
@@ -69,185 +86,128 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen relative overflow-hidden bg-background">
       <Navbar />
-      
-      <main className="pt-24 pb-16">
-        <div className="container mx-auto px-6">
-          {/* Welcome Section */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">
-              Welcome back, Eco Warrior! 👋
-            </h1>
-            <p className="text-muted-foreground">
-              You're making great progress. Keep up the sustainable actions!
-            </p>
-          </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <StatCard 
-              title="Total Points" 
-              value="1,250" 
-              subtitle="Lifetime earnings"
-              icon={Leaf}
-              trend={{ value: 12, isPositive: true }}
-              color="lime"
-            />
-            <StatCard 
-              title="CO₂ Saved" 
-              value="45.2 kg" 
-              subtitle="This month"
-              icon={TrendingUp}
-              trend={{ value: 8, isPositive: true }}
-              color="primary"
-            />
-            <StatCard 
-              title="Weekly Goal" 
-              value="68%" 
-              subtitle="175 / 250 pts"
-              icon={Target}
-              color="sky"
-            />
-            <StatCard 
-              title="Current Streak" 
-              value="7 days" 
-              subtitle="Keep it going!"
-              icon={Flame}
-              color="orange"
-            />
+      {/* 🖼️ Background image layer */}
+      <div
+        className="absolute inset-0 -z-20 bg-cover bg-center"
+        style={{
+          backgroundImage: "url('/src/assets/images/dashboard-bg.jpg')",
+          filter: "brightness(0.35) blur(2px)",
+        }}
+      />
+
+      {/* 🌿 Slow ambient glow layer */}
+      <div
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          background: `
+            radial-gradient(
+              900px at ${40 + Math.sin(phase * 2 * Math.PI) * 10}% 
+              ${30 + Math.cos(phase * 2 * Math.PI) * 10}%,
+              rgba(34,197,94,0.14),
+              transparent 60%
+            ),
+            radial-gradient(
+              800px at ${70 + Math.cos(phase * 2 * Math.PI) * 8}% 
+              ${75 + Math.sin(phase * 2 * Math.PI) * 8}%,
+              rgba(16,185,129,0.10),
+              transparent 65%
+            )
+          `,
+        }}
+      />
+
+      <main className="pt-24 pb-16">
+        <div className="container mx-auto px-6 space-y-14 relative z-10">
+
+          {/* Welcome */}
+          <Reveal>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-black">
+                Welcome back, Eco Warrior! 👋
+              </h1>
+              <p className="text-black/70">
+                You're making great progress. Keep up the sustainable actions!
+              </p>
+            </div>
+          </Reveal>
+
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Reveal delay={0}><StatCard title="Total Points" value="1,250" subtitle="Lifetime earnings" icon={Leaf} trend={{ value: 12, isPositive: true }} color="lime" /></Reveal>
+            <Reveal delay={140}><StatCard title="CO₂ Saved" value="45.2 kg" subtitle="This month" icon={TrendingUp} trend={{ value: 8, isPositive: true }} color="primary" /></Reveal>
+            <Reveal delay={280}><StatCard title="Weekly Goal" value="68%" subtitle="175 / 250 pts" icon={Target} color="sky" /></Reveal>
+            <Reveal delay={420}><StatCard title="Current Streak" value="7 days" subtitle="Keep it going!" icon={Flame} color="orange" /></Reveal>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-6">
+
             {/* Activities */}
-            <div className="lg:col-span-2 space-y-6">
-              <Card variant="eco">
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-xl">Your Activities</CardTitle>
-                  <span className="text-sm text-muted-foreground">This week</span>
+            <Reveal>
+              <Card className="lg:col-span-2 bg-background/75 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.35)] hover:shadow-[0_30px_80px_rgba(34,197,94,0.25)] transition-all duration-700">
+                <CardHeader>
+                  <CardTitle>Your Activities</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
-                    {activities.map((activity, index) => (
-                      <Link key={index} to={activity.href}>
-                        <Card 
-                          variant="stat" 
-                          className="cursor-pointer hover:shadow-eco-lg"
-                        >
-                          <CardContent className="p-4">
-                            <div className="flex items-center gap-4">
-                              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                                activity.color === 'lime' ? 'bg-eco-lime/10 text-eco-lime' :
-                                activity.color === 'primary' ? 'bg-primary/10 text-primary' :
-                                activity.color === 'sky' ? 'bg-eco-sky/10 text-eco-sky' :
-                                'bg-eco-orange/10 text-eco-orange'
-                              }`}>
-                                <activity.icon className="w-6 h-6" />
-                              </div>
-                              <div className="flex-1">
-                                <p className="text-sm font-medium text-muted-foreground">{activity.title}</p>
-                                <p className="text-xl font-bold text-foreground">+{activity.points} pts</p>
-                                <p className="text-xs text-muted-foreground">{activity.subtitle}</p>
-                              </div>
+                <CardContent className="grid grid-cols-2 gap-4">
+                  {activities.map((a, i) => (
+                    <Reveal key={i} delay={i * 120}>
+                      <Link to={a.href}>
+                        <Card className="bg-background/70 backdrop-blur-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-700">
+                          <CardContent className="p-4 flex items-center gap-4">
+                            <a.icon className="w-6 h-6 text-eco-lime" />
+                            <div>
+                              <p className="font-semibold">+{a.points} pts</p>
+                              <p className="text-xs text-muted-foreground">{a.subtitle}</p>
                             </div>
                           </CardContent>
                         </Card>
                       </Link>
-                    ))}
-                  </div>
+                    </Reveal>
+                  ))}
                 </CardContent>
               </Card>
+            </Reveal>
 
-              {/* Recent Activity */}
-              <Card variant="eco">
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-xl">Recent Activity</CardTitle>
-                  <Button variant="ghost" size="sm">View All</Button>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {recentActivities.map((activity, index) => (
-                      <div 
-                        key={index} 
-                        className="flex items-center gap-4 p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
-                      >
-                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <activity.icon className="w-5 h-5 text-primary" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-medium text-foreground">{activity.action}</p>
-                          <p className="text-xs text-muted-foreground">{activity.time}</p>
-                        </div>
-                        <span className="text-eco-lime font-semibold">{activity.points}</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Sidebar */}
-            <div className="space-y-6">
-              {/* Achievements */}
-              <Card variant="eco">
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-xl flex items-center gap-2">
-                    <Award className="w-5 h-5 text-eco-lime" />
-                    Achievements
+            {/* Achievements */}
+            <Reveal delay={200}>
+              <Card className="bg-background/75 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.35)] transition-shadow duration-700">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Award className="text-eco-lime" /> Achievements
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {achievements.map((achievement, index) => (
-                      <div key={index} className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xl">{achievement.icon}</span>
-                            <div>
-                              <p className="font-medium text-foreground text-sm">{achievement.title}</p>
-                              <p className="text-xs text-muted-foreground">{achievement.description}</p>
-                            </div>
-                          </div>
-                          <span className="text-xs font-semibold text-primary">{achievement.progress}%</span>
-                        </div>
-                        <Progress value={achievement.progress} className="h-2" />
+                <CardContent className="space-y-4">
+                  {achievements.map((a, i) => (
+                    <div key={i} className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span>{a.icon} {a.title}</span>
+                        <span>{a.progress}%</span>
                       </div>
-                    ))}
-                  </div>
+                      <Progress value={a.progress} className="h-2 transition-all duration-[900ms]" />
+                    </div>
+                  ))}
                 </CardContent>
               </Card>
+            </Reveal>
 
-              {/* Quick Actions */}
-              <Card variant="eco">
-                <CardHeader>
-                  <CardTitle className="text-xl">Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Link to="/walk">
-                    <Button variant="eco" className="w-full justify-between group">
-                      Start Walking
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </Button>
-                  </Link>
-                  <Link to="/trees">
-                    <Button variant="outline" className="w-full justify-between group">
-                      Plant a Tree
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </Button>
-                  </Link>
-                  <Link to="/rewards">
-                    <Button variant="secondary" className="w-full justify-between group">
-                      <span className="flex items-center gap-2">
-                        <Gift className="w-4 h-4" />
-                        Redeem Rewards
-                      </span>
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            </div>
           </div>
+
+          {/* Quick Actions */}
+          <Reveal delay={300}>
+            <Card className="bg-background/75 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.35)] transition-shadow duration-700">
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Link to="/walk"><Button className="w-full justify-between">Start Walking <ArrowRight /></Button></Link>
+                <Link to="/trees"><Button variant="outline" className="w-full justify-between">Plant a Tree <ArrowRight /></Button></Link>
+                <Link to="/rewards"><Button variant="secondary" className="w-full justify-between"><span className="flex gap-2"><Gift /> Redeem Rewards</span><ArrowRight /></Button></Link>
+              </CardContent>
+            </Card>
+          </Reveal>
+
         </div>
       </main>
 
@@ -257,3 +217,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
