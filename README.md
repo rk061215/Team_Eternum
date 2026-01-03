@@ -53,7 +53,7 @@ Instead of penalties or restrictions, EcoTrack uses **positive reinforcement and
 
 ---
 
-### 🚶 Walking / Cycling Credits
+### 🚶 Walking Credits
 - Users earn credits for choosing walking or cycling over motor vehicles
 - Credits are calculated using CO₂ avoidance logic
 
@@ -68,26 +68,20 @@ Instead of penalties or restrictions, EcoTrack uses **positive reinforcement and
 ---
 
 ### 🚌 Public Transport Credits
-- Rewards users for choosing buses, metro, or trains
+- Rewards users for choosing buses.
 - Includes basic verification logic to prevent misuse
 
 ---
 
 ### ♻️ Plastic Bottle Collection
 - Credits for collecting and recycling plastic bottles
+- Credits are added via inputing the 6 digit Code from Vendor Machine
 - Promotes reduction of plastic pollution
 - Encourages responsible waste management
 
 ---
 
-### 🏆 Leaderboard & Gamification
-- Campus-level leaderboard
-- Climate badges and achievements
-- Encourages healthy competition and consistency
-
----
-
-## 🏛️ System Vision
+## 🏛️ System Vision(Future)
 EcoTrack follows a **UPI-like sustainability model**:
 
 - **Central Authority (Conceptual):** Government-level standards and policies  
