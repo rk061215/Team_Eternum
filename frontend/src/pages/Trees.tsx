@@ -146,7 +146,7 @@ const Trees = () => {
               value={result ? (result.isTree ? "YES 🌳" : "NO ❌") : "-"}
               subtitle={
                 result
-                  ? ` ${(result.greenRatio * 100).toFixed(1)}%`
+                  ? `tree probability : ${(result.greenRatio * 100).toFixed(1)}%`
                   : "Waiting"
               }
               icon={TreeDeciduous}
